@@ -5,7 +5,7 @@
 #include<pthread.h>
 #include<semaphore.h
 sem_t wrt , mutex;
-int shared = 0;
+int shared = 0, readCount = 0;
 
 
 
@@ -20,6 +20,30 @@ void *writer(void *args)
 
 }
 
+void *reader(void *args)
+{
+	int id;
+	id = ((int) args);
+	sem_wait(&mutex);
+	readCount++;
+	if(readCount == 1) // the first reader will not allow the writers to enter the critical condition
+	{
+		sem_wait(&wrt);
+	}
+	sem_post(&mutex);
+	printf("The reader process %d has entered the critical condition and the shared value is %d\n" , id+1,shared);
+
+	sleep(1);
+
+	sem_wait(&mutex);
+	readCount--;
+	if(readCount==0)
+	{
+		sem_post(&wrt);
+	}
+	sem_post(&mutex);
+
+}
 int main()
 {
 	pthread_t   write_thread[5];
@@ -29,9 +53,11 @@ int main()
 	for(i = 0 ; i< 5 ; i++)
 	{
 		pthread_create(&write_thread[i], NULL , writer , (void *) i );
+		pthread_create(&read_thread[i], NULL , reader , (void *) i);
 	}
 	for(i = 0 ; i< 5 ; i++)
 	{
+		pthread_join(write_thread[i], NULL);
 		pthread_join(write_thread[i], NULL);
 	}
 	return 0;
