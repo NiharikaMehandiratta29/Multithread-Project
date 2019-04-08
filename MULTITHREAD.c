@@ -46,17 +46,19 @@ void *reader(void *args)
 }
 int main()
 {
-	pthread_t read_thread[5],  write_thread[5];
+	pthread_t read_thread[20],  write_thread[20];
     pthread_mutex_init(&wrt,NULL);
 	pthread_mutex_init(&mutex,NULL);
 
-	int i;
-	for(i = 0 ; i< 5 ; i++)
+	int i,n;
+	printf("Enter number of writer process and reader process you want to enter : ");
+	scanf("%d" , &n);
+	for(i = 0 ; i< n; i++)
 	{
 		pthread_create(&write_thread[i], NULL , writer , (void *) i );
 		pthread_create(&read_thread[i], NULL , reader , (void *) i);
 	}
-	for(i = 0 ; i< 5 ; i++)
+	for(i = 0 ; i< n ; i++)
 	{
 		pthread_join(read_thread[i], NULL);
 		pthread_join(write_thread[i], NULL);
